@@ -282,7 +282,7 @@ const uglyPassword = await bcrypt.hash(password, 10);
 
 > #### JWT
 
-- token is created by our SECRET_KEY which nobody can modify
+- jwt token checks `1.created by our SECRET_KEY`, `2.nobody modified`
 - cookie works well if front and backend are at same server
 - jwt token is better for mobile apps
   - can use expiresIn
@@ -309,8 +309,112 @@ mkdir users/seeProfile
 touch users/seeProfile/seeProfile.resolvers.js
 touch users/seeProfile/seeProfile.typeDefs.js
 
+rm users/users.queries.js users/users.mutations.js
+
 // schema.js
   `${__dirname}/**/*.{queries,mutations}.js` // glob syntax
 to
-  `${__dirname}/**/*.{resolvers}.js` // glob syntax
+  `${__dirname}/**/*.resolvers.js` // glob syntax
+```
+
+> ### editProfile
+
+- It is okay to send undefined. not gonna update
+- use ES6 if there is uglyPassword, send else undefined
+
+```ts
+// editProfile.resolvers.js
+          ...(uglyPassword && { password: uglyPassword }),
+```
+
+> #### verify token and get id to edit
+
+```ts
+const { id } = await jwt.verify(token, process.env.SECRET_KEY);
+```
+
+- but every transaction check token? => http header from `context`
+- `context`: available with all resolvers
+- let's send not just token but `user` to `context`
+
+```ts
+// touch users/users.utils.js
+export const getUser = async (token) => {
+  try {
+    if (!token) {
+      return null;
+    }
+    const { id } = await jwt.verify(token, process.env.SECRET_KEY);
+    const user = await client.user.findUnique({ where: { id } });
+    if (user) {
+      return user;
+    } else {
+      return null;
+    }
+  } catch (error) {
+    return null;
+  }
+};
+
+// server.js
+context: async ({ req }) => ({
+    loggedInUser: await getUser(req.headers.token),
+  }),
+
+// editProfile.resolvers.js
+Mutation: {
+    editProfile: async (
+      _,
+      { firstName, lastName, username, email, password: newPassword },
+      { loggedInUser }
+    ) => {
+      let uglyPassword = null;
+      if (newPassword) {
+        uglyPassword = await bcrypt.hash(newPassword, 10);
+      }
+      const updatedUser = await client.user.update({
+        where: { id: loggedInUser.id },
+...
+```
+
+> #### protect resolver with resolver using `Currying`
+
+- Basic concept
+
+```ts
+const x = (resolver) => (root, args, context, info) => {
+  //...check auth
+  return resolver(root, args, context, info);
+};
+x(b)(c); // waht is called, currying
+```
+
+- adjust to protect all resolvers
+
+```ts
+export const protectedResolver = (ourResolver) => (
+  root,
+  args,
+  context,
+  info
+) => {
+  if (!context.loggedInUser) {
+    return { ok: false, error: "Please login to perform this action." };
+  }
+  return ourResolver(root, args, context, info);
+};
+```
+
+- But protectedResolver should returns ok and errors => unify the output
+- What about seeProfile?
+
+> ## Typescript Setup
+
+- ts-node substitue bable-node
+
+```
+npm i typescript ts-node --save-dev
+mkdir src
+mv users src/
+rm babel.config.json
 ```
