@@ -412,9 +412,35 @@ export const protectedResolver = (ourResolver) => (
 
 - ts-node substitue bable-node
 
-```
+```ts
 npm i typescript ts-node --save-dev
 mkdir src
 mv users src/
+mv *.js src/
 rm babel.config.json
+
+//touch tsconfig.json
+{
+  "compilerOptions": {
+    "outDir": "./built",
+    "allowJs": true,
+    "target": "ES5"
+  },
+  "include": ["./src/**/*"]
+}
+
+// package.json
+    "dev": "nodemon --exec ts-node src/server --ext ts,js",
 ```
+
+- awk
+- handle jwt import err
+
+```
+import jwt from "jsonwebtoken";
+to
+import * as jwt from "jsonwebtoken";
+
+```
+
+find src -name "\*.js" | xargs rename s/.js/.ts/
