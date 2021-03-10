@@ -213,3 +213,104 @@ require("dotenv").config(); // should be on top of code
 rm -rf movies prisma
 DROP DATABASE instaclone;
 ```
+
+> ## User Module
+
+> ### Create account
+
+```
+npx prisma init
+mkdir users
+touch users/users.typeDefs.js
+touch users/users.queries.js
+touch users/users.mutations.js
+```
+
+> #### we don't need password at gql
+
+```ts
+export default gql`
+  type User {
+    id: String!
+    firstName: String!
+    lastName: String
+    username: String!
+    email: String!
+    createdAt: String!
+    updatedAt: String!
+  }
+`;
+...
+```
+
+> #### Don't just let user touch DB constraint error => check at code LV
+
+- use Combine multiple filter conditions like
+
+```ts
+where: {
+          OR: [{ username }, { email }],
+        },
+```
+
+> #### Hashing password
+
+- browser is smart to wait prisma to finish (no need explicit await)
+
+```ts
+npm i bcrypt
+
+// users.mutations.js
+const uglyPassword = await bcrypt.hash(password, 10);
+      // browser is smart to wait prisma to finish
+      return client.user.create({
+        data: { username, email, firstName, lastName, password: uglyPassword },
+      });
+```
+
+> #### Using await => better to put all in trycatch
+
+> ### seeProfile
+
+- findUnique works with unique column only
+
+> ### login
+
+- find user with username
+- check password
+- issue a token
+
+> #### JWT
+
+- token is created by our SECRET_KEY which nobody can modify
+- cookie works well if front and backend are at same server
+- jwt token is better for mobile apps
+  - can use expiresIn
+
+```
+npm i jsonwebtoken
+```
+
+> ### login
+
+- lets devide & conquer
+
+```
+mkdir users/editProfile
+touch users/editProfile/editProfile.resolvers.js
+touch users/editProfile/editProfile.typeDefs.js
+mkdir users/createAccount
+touch users/createAccount/createAccount.resolvers.js
+touch users/createAccount/createAccount.typeDefs.js
+mkdir users/login
+touch users/login/login.resolvers.js
+touch users/login/login.typeDefs.js
+mkdir users/seeProfile
+touch users/seeProfile/seeProfile.resolvers.js
+touch users/seeProfile/seeProfile.typeDefs.js
+
+// schema.js
+  `${__dirname}/**/*.{queries,mutations}.js` // glob syntax
+to
+  `${__dirname}/**/*.{resolvers}.js` // glob syntax
+```
