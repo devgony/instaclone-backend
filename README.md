@@ -124,6 +124,28 @@ init
 
 > #### typeDefs should be Manually updated to sync with schema.prisma file
 
+```js
+// prisma/schema.prisma
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Movie {
+  id        Int      @id @default(autoincrement())
+  title     String
+  year      Int
+  genre     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+```
+
 > #### use client
 
 ```js
@@ -133,9 +155,61 @@ updateMovie: (_, { id, year }) =>
 
 - DML returns record itself (event delete)
 
-> ### Prisma Studio
+> #### Prisma Studio
 
 ```
 // package.json
 "studio": "npx prisma studio",
+```
+
+> ### Architecture: devide & conquer by domain
+
+- devide and `export default`
+
+```
+> touch client.js
+> touch schema.js
+  // typedefs, resolver
+> mkdir movies
+touch movies/movies.queries.js
+touch movies/movies.mutations.js
+touch movies/movies.typeDefs.js
+```
+
+> #### Graphql Tools
+
+```ts
+npm i graphql-tools
+
+// schema.js
+const loadedTypes = loadFilesSync(`${__dirname}/**/*.typeDefs.js`);
+const loadedResolvers = loadFilesSync(
+  `${__dirname}/**/*.{queries,mutations}.js` // glob syntax
+);
+const typeDefs = mergeTypeDefs(loadedTypes);
+const resolvers = mergeResolvers(loadedResolvers);
+const schema = makeExecutableSchema({ typeDefs, resolvers });
+export default schema;
+
+// server.js
+const server = new ApolloServer({ schema });
+```
+
+> #### dotenv
+
+```ts
+npm i dotenv
+
+// .env
+PORT=4000
+
+// server.js
+require("dotenv").config(); // should be on top of code
+```
+
+> ## Init from zero
+
+```
+rm -rf movies prisma
+DROP DATABASE instaclone;
 ```
