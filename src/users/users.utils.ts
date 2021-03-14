@@ -1,4 +1,5 @@
-import jwt from "jsonwebtoken";
+import * as jwt from "jsonwebtoken";
+// import jwt from "jsonwebtoken";
 import client from "../client";
 export const getUser = async (token) => {
   try {

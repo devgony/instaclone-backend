@@ -419,7 +419,7 @@ mv users src/
 mv *.js src/
 rm babel.config.json
 
-//touch tsconfig.json
+// touch tsconfig.json
 {
   "compilerOptions": {
     "outDir": "./built",
@@ -429,11 +429,17 @@ rm babel.config.json
   "include": ["./src/**/*"]
 }
 
-// package.json
+// package.json : add src, --ext ts,js
     "dev": "nodemon --exec ts-node src/server --ext ts,js",
 ```
 
-- awk
+- Convert extention
+
+```
+find src -name "*.js" -exec sh -c 'mv $1 ${1/.js/.ts}' find-sh {} \;
+sed -i '' s/.js/.ts/g src/schema.ts
+```
+
 - handle jwt import err
 
 ```
@@ -442,5 +448,3 @@ to
 import * as jwt from "jsonwebtoken";
 
 ```
-
-find src -name "\*.js" | xargs rename s/.js/.ts/
