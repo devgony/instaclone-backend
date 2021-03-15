@@ -436,7 +436,7 @@ rm babel.config.json
 - Convert extention
 
 ```
-find src -name "*.js" -exec sh -c 'mv $1 ${1/.js/.ts}' find-sh {} \;
+find src -name "*.js" -exec sh -c 'mv $1 ${1/.js/.ts}' _ {} \;
 sed -i '' s/.js/.ts/g src/schema.ts
 ```
 
@@ -447,4 +447,46 @@ import jwt from "jsonwebtoken";
 to
 import * as jwt from "jsonwebtoken";
 
+```
+
+
+- define types
+```ts
+// touch src/types.d.ts
+type Context = {
+  loggedInUser?: User;
+  client: PrismaClient;
+};
+
+export type Resolver = (
+  root: any,
+  args: any,
+  context: Context,
+  info: any
+) => any;
+
+export type Resolvers = {
+  [key: string]: {
+    [key: string]: Resolver;
+  };
+};
+```
+- now we can add client to context
+```ts
+const server = new ApolloServer({
+  schema,
+  context: async ({ req }) => ({
+    loggedInUser: await getUser(req.headers.token),
+    client,
+  }),
+});
+```
+
+- add Resolver type to util
+```ts
+export const protectedResolver = (ourResolver: Resolver) => (
+```
+- we can use loggedInUser and client even at protedtedResolver
+```ts
+    seeProfile: protectedResolver((_, { username }, { loggedInUser, client }) =>
 ```
