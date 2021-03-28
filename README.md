@@ -449,8 +449,8 @@ import * as jwt from "jsonwebtoken";
 
 ```
 
+- Define types
 
-- define types
 ```ts
 // touch src/types.d.ts
 type Context = {
@@ -471,8 +471,11 @@ export type Resolvers = {
   };
 };
 ```
-- now we can add client to context
+
+- now we can add client to context => no need to import at each files anymore
+
 ```ts
+// server.ts
 const server = new ApolloServer({
   schema,
   context: async ({ req }) => ({
@@ -483,10 +486,58 @@ const server = new ApolloServer({
 ```
 
 - add Resolver type to util
+
 ```ts
+// users.utils.ts
 export const protectedResolver = (ourResolver: Resolver) => (
 ```
+
 - we can use loggedInUser and client even at protedtedResolver
+
 ```ts
+// seeProfile.resolvers.ts
     seeProfile: protectedResolver((_, { username }, { loggedInUser, client }) =>
+```
+
+## #4 USER MODULE - 4.14 File Upload
+
+- Give resolvers, typeDefs to ApolloServer
+  - => no need manual schema sync
+  - => enable upload function
+
+```ts
+// schema.ts
+export const typeDefs = mergeTypeDefs(loadedTypes);
+export const resolvers = mergeResolvers(loadedResolvers);
+...
+// don't need to export schema
+
+// server.ts
+const server = new ApolloServer({
+  // instead of schema,
+  resolvers,
+  typeDefs,
+...
+```
+
+- Add `bio`, `avatar` to schema.prisma, users.typeDefs.ts,
+- Add `bio` to editProfile.typeDef.ts, editProfile.resolvers.ts
+
+### Install Altair graphql client for chrome
+
+- add `avatar: Upload` to editProfile.typeDefs.ts, editProfile.resolvers.ts
+- https://altair.sirmuel.design/#download
+
+```ts
+mutation($bio: String, $avatar: Upload) {
+  editProfile(bio: $bio, avatar: $avatar) {
+    ok
+    error
+  }
+}
+
+{
+  "bio": "henry"
+}
+avatar => fileUpload
 ```
