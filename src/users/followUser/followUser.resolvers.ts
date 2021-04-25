@@ -11,21 +11,24 @@ export default {
           error: "That user does not exist.",
         };
       }
-      await client.user.update({
-        where: {
-          id: loggedInUser.id,
-        },
-        data: {
-          following: {
-            connect: {
-              username, // why not id? // why not checking existance?
+      try {
+        await client.user.update({
+          where: {
+            id: loggedInUser.id,
+          },
+          data: {
+            following: {
+              connect: {
+                username,
+              },
             },
           },
-        },
-      });
-      return {
-        ok: true,
-      };
+        });
+        return { ok: true };
+      } catch (error) {
+        console.log(error);
+        return { ok: false, error: "could not follow" };
+      }
     }),
   },
 };
