@@ -1,10 +1,13 @@
 require("dotenv").config(); // should be on top of code
-import { ApolloServer } from "apollo-server";
+import * as express from "express";
+import * as logger from "morgan";
+import { ApolloServer } from "apollo-server-express";
 import { resolvers, typeDefs } from "./schema";
 import { getUser } from "./users/users.utils";
 import client from "./client";
 
-const server = new ApolloServer({
+const PORT = process.env.PORT;
+const apollo = new ApolloServer({
   resolvers,
   typeDefs,
   // schema,
@@ -14,8 +17,12 @@ const server = new ApolloServer({
   }),
 });
 
-const PORT = process.env.PORT;
+// order of middle ware is important (logger should be earlier than apollo)
+const app = express();
+app.use(logger("tiny"));
+app.use("/static", express.static("uploads"));
+apollo.applyMiddleware({ app });
 
-server
-  .listen(PORT)
-  .then(() => console.log(`🚀 Server is running on http://localhost:${PORT}`));
+app.listen({ port: PORT }, () =>
+  console.log(`🚀 Server is running on http://localhost:${PORT}`)
+);

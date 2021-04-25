@@ -1,3 +1,4 @@
+import { createWriteStream } from "fs";
 import client from "../../client";
 import * as jwt from "jsonwebtoken";
 import * as bcrypt from "bcrypt";
@@ -19,7 +20,18 @@ export default {
         },
         { loggedInUser }
       ) => {
-        console.log(bio, avatar);
+        let avatarUrl = null;
+        if (avatar) {
+          // console.log(bio, avatar);
+          const { filename, createReadStream } = await avatar;
+          const newFilename = `${loggedInUser.id}-${Date.now()}-${filename}`;
+          const readStream = createReadStream();
+          const writeStream = createWriteStream(
+            `${process.cwd()}/uploads/${newFilename}`
+          );
+          readStream.pipe(writeStream);
+          avatarUrl = `http://localhost:4000/static/${newFilename}`;
+        }
         let uglyPassword = null;
         if (newPassword) {
           uglyPassword = await bcrypt.hash(newPassword, 10);
@@ -33,6 +45,7 @@ export default {
             email,
             bio,
             ...(uglyPassword && { password: uglyPassword }),
+            ...(avatarUrl && { avatar: avatarUrl }),
           },
         });
         if (updatedUser.id) {

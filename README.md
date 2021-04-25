@@ -382,7 +382,7 @@ Mutation: {
 - Basic concept
 
 ```ts
-const x = (resolver) => (root, args, context, info) => {
+const x = resolver => (root, args, context, info) => {
   //...check auth
   return resolver(root, args, context, info);
 };
@@ -392,12 +392,7 @@ x(b)(c); // waht is called, currying
 - adjust to protect all resolvers
 
 ```ts
-export const protectedResolver = (ourResolver) => (
-  root,
-  args,
-  context,
-  info
-) => {
+export const protectedResolver = ourResolver => (root, args, context, info) => {
   if (!context.loggedInUser) {
     return { ok: false, error: "Please login to perform this action." };
   }
@@ -527,6 +522,8 @@ const server = new ApolloServer({
 
 - add `avatar: Upload` to editProfile.typeDefs.ts, editProfile.resolvers.ts
 - https://altair.sirmuel.design/#download
+- add token to "set Headers" `token: ~~`
+- use variable with $ and put the bind at "VARIABLES"
 
 ```ts
 mutation($bio: String, $avatar: Upload) {
@@ -540,4 +537,98 @@ mutation($bio: String, $avatar: Upload) {
   "bio": "henry"
 }
 avatar => fileUpload
+```
+
+### Handle duplicated port error
+
+- add --delay 2s
+
+```
+    "dev": "nodemon --exec ts-node src/server --ext ts,js --delay 2s",
+
+```
+
+### Handle "Maximum call stack size exceeded" error
+
+```js
+// pacakge.json
+"preinstall": "npx npm-force-resolutions",
+...
+"resolutions": {
+"fs-capacitor": "^6.2.0",
+"graphql-upload": "^11.0.0"
+}
+
+rm -rf node_modules
+npm i
+```
+
+### stream to pip
+
+- just testing writing file to local
+
+```js
+const { filename, createReadStream } = await avatar;
+const readStream = createReadStream();
+const writeStream = createWriteStream(process.cwd() + "/uploads/" + filename);
+readStream.pipe(writeStream);
+```
+
+## Switch to apollo-server-express
+
+- now route is inside of apollo server => use `apollo-server-express` => add express to apollo to use more router than graphql like REST API, Socket.io...
+
+```js
+> npm i express apollo-server-express
+
+// server.ts
+import * as express from "express";
+import * as logger from "morgan"; // to enable logging
+import { ApolloServer } from "apollo-server-express"; // from apollo-server to apollo-server-express
+
+const app = express();
+app.use(logger("tiny"));
+server.applyMiddleware({ app });
+
+// change to app with callback
+app.listen({ port: PORT }, () =>
+  console.log(`🚀 Server is running on http://localhost:${PORT}`)
+);
+```
+
+### Handle DeprecationWarning: ReadStream.prototype.open() is deprecated again
+
+- gets from apollo-server-express more than 2.20.0 => just npm i again
+
+```
+rm -rf node_modules
+npm i
+```
+
+## Changing Avatar => handle static file
+
+- expose static file with express
+
+```js
+app.use("/static", express.static("uploads"));
+```
+
+### get unique fileName and save
+
+```js
+let avatarUrl = null;
+if (avatar) {
+  // console.log(bio, avatar);
+  const { filename, createReadStream } = await avatar;
+  const newFilename = `${loggedInUser.id}-${Date.now()}-${filename}`;
+  const readStream = createReadStream();
+  const writeStream = createWriteStream(
+    `${process.cwd()}/uploads/${newFilename}`
+  );
+  readStream.pipe(writeStream);
+  avatarUrl = `http://localhost:4000/static/${newFilename}`;
+}
+...
+            ...(avatarUrl && { avatar: avatarUrl }),
+...
 ```
