@@ -1,5 +1,5 @@
 import client from "../../client";
-import bcrypt from "bcrypt";
+import * as bcrypt from "bcrypt";
 
 export default {
   Mutation: {
@@ -20,7 +20,9 @@ export default {
         }
         const uglyPassword = await bcrypt.hash(password, 10);
         // browser is smart to wait prisma to finish
-        return client.user.create({
+        // hash password
+        // save and return the user
+        await client.user.create({
           data: {
             username,
             email,
@@ -29,10 +31,10 @@ export default {
             password: uglyPassword,
           },
         });
-        // hash password
-        // save and return the user
+        return { ok: true };
       } catch (error) {
-        return error;
+        console.log(error);
+        return { ok: false, error: "Could not create account." };
       }
     },
   },

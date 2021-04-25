@@ -19,7 +19,7 @@ const apollo = new ApolloServer({
 
 // order of middle ware is important (logger should be earlier than apollo)
 const app = express();
-app.use(logger("tiny"));
+// app.use(logger("tiny"));
 app.use("/static", express.static("uploads"));
 apollo.applyMiddleware({ app });
 

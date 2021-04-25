@@ -632,3 +632,22 @@ if (avatar) {
             ...(avatarUrl && { avatar: avatarUrl }),
 ...
 ```
+
+## #4.20 Followers part One (07:59)
+
+- fix createAccount bug => should return `CreateAccountResult`
+- user likes user => self relationship
+
+```js
+// schema.prisma
+followers User[]   @relation("FollowRelation", references: [id])
+following User[]   @relation("FollowRelation", references: [id])
+```
+
+- test relations with prisma studio
+
+## #4.21 Following User
+
+mkdir src/users/followUser
+touch src/users/followUser/followUser.typeDefs.js
+touch src/users/followUser/followUser.resolvers.js
