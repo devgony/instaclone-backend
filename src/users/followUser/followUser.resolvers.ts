@@ -27,7 +27,7 @@ export default {
         return { ok: true };
       } catch (error) {
         console.log(error);
-        return { ok: false, error: "could not follow" };
+        return { ok: false, error: "Could not follow." };
       }
     }),
   },

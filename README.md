@@ -648,6 +648,38 @@ following User[]   @relation("FollowRelation", references: [id])
 
 ## #4.21 Following User
 
+```
 mkdir src/users/followUser
-touch src/users/followUser/followUser.typeDefs.js
-touch src/users/followUser/followUser.resolvers.js
+touch src/users/followUser/followUser.typeDefs.ts
+touch src/users/followUser/followUser.resolvers.ts
+```
+
+## #4.22 Unfollow User and See Followers
+
+```
+mkdir src/users/unfollowUser
+touch src/users/unfollowUser/unfollowUser.typeDefs.ts
+touch src/users/unfollowUser/unfollowUser.resolvers.ts
+```
+
+## #4.23 Followers Pagination part One
+
+- Pagination#1: Offset: good for jump?
+- Pagination#2: Cursor-based
+
+```js
+mkdir src/users/seeFollowers
+touch src/users/seeFollowers/seeFollowers.typeDefs.ts
+touch src/users/seeFollowers/seeFollowers.resolvers.ts
+```
+
+- 2 ways of getting followers
+
+```js
+const aFollowers = await client.user
+  .findUnique({ where: { username } })
+  .followers(); // username's followers
+const bFollowers = await client.user.findMany({
+  where: { following: { some: { username } } },
+}); // where username in following
+```
