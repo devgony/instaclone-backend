@@ -664,15 +664,6 @@ touch src/users/unfollowUser/unfollowUser.resolvers.ts
 
 ## #4.23 Followers Pagination part One
 
-- Pagination#1: Offset: good for jump?
-- Pagination#2: Cursor-based
-
-```js
-mkdir src/users/seeFollowers
-touch src/users/seeFollowers/seeFollowers.typeDefs.ts
-touch src/users/seeFollowers/seeFollowers.resolvers.ts
-```
-
 - 2 ways of getting followers
 
 ```js
@@ -683,3 +674,64 @@ const bFollowers = await client.user.findMany({
   where: { following: { some: { username } } },
 }); // where username in following
 ```
+
+### Pagination#1: Offset: good for jump?
+
+- Cons of offset: Even with skip, still need to traverse the first data
+- Start from offset, if rows gets bigger, try to use cursor-based
+
+```js const followers = await client.user
+        .findUnique({ where: { username } })
+        .followers({
+          take: 5,
+          skip: (page - 1) * 5,
+        });
+```
+
+```js
+mkdir src/users/seeFollowers
+touch src/users/seeFollowers/seeFollowers.typeDefs.ts
+touch src/users/seeFollowers/seeFollowers.resolvers.ts
+```
+
+### total pages
+
+- Use PrismaClient.count
+
+### some vs every vs none
+
+some: User following $username (IN + EQUAL to $username)
+every: User following $username + User following nobody (NOT IN + NOT EQUAL to $username)
+none: User not following $username (NOT IN + EQUAL to $username)
+
+## #4.25 Following Pagination
+
+### Pagination#2: Cursor-based
+
+- scales well
+- can't jump to specific page
+- for infinite scroll
+
+```js
+mkdir src/users/seeFollowing
+touch src/users/seeFollowing/seeFollowing.typeDefs.ts
+touch src/users/seeFollowing/seeFollowing.resolvers.ts
+```
+
+## ##4.26 Computed Fields part One
+
+- At gql schema but not in DB
+
+```js
+// users.typeDefs.ts
+...
+totalFollowing: Int!
+totalFollowers: Int!
+isMe: Boolean!
+...
+
+touch src/users/users.resolvers.ts
+```
+
+- seeProfile resolver => get user from DB => no totalFollowing? => goes User (userDefined resolver)
+- don't need await => gql will await for us
