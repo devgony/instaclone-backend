@@ -718,20 +718,40 @@ touch src/users/seeFollowing/seeFollowing.typeDefs.ts
 touch src/users/seeFollowing/seeFollowing.resolvers.ts
 ```
 
-## ##4.26 Computed Fields part One
+## ##4.26 Computed Fields
+
+### Concept of Computed Field
 
 - At gql schema but not in DB
+- seeProfile resolver => get user from DB => no totalFollowing? => goes User (userDefined resolver)
+- don't need await => gql will await for us
 
 ```js
 // users.typeDefs.ts
 ...
 totalFollowing: Int!
 totalFollowers: Int!
-isMe: Boolean!
+isMe: Boolean! // if the username is me
+isFollowing: Boolean! // if i am following the username
 ...
 
 touch src/users/users.resolvers.ts
 ```
 
-- seeProfile resolver => get user from DB => no totalFollowing? => goes User (userDefined resolver)
-- don't need await => gql will await for us
+## #4.29 Searching Users
+
+```js
+mkdir src/users/searchUsers
+touch src/users/searchUsers/searchUsers.typeDefs.ts
+touch src/users/searchUsers/searchUsers.resolvers.ts
+```
+
+- search by `startsWith: keyword.toLowerCase()`
+- Do pagination as homework
+
+## #6.0 Photos Model
+
+- As soon as add and save `photos Photo[]` prisma will know the relationship and does auto-complete without touching DB `user User @relation(fields: [userId], references: [id])`
+- Caption to parse to hashtags
+- Photos <-> Hashtags are m:n
+- Migrate new model with `npm run migrate`
