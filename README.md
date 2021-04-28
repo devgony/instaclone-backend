@@ -755,3 +755,113 @@ touch src/users/searchUsers/searchUsers.resolvers.ts
 - Caption to parse to hashtags
 - Photos <-> Hashtags are m:n
 - Migrate new model with `npm run migrate`
+
+## #6.1 Prisma Fields vs SQL Fields
+
+- Primsa shows relations with nested column
+
+## #6.2 Upload Photo
+
+```js
+mkdir src/users/photos
+touch src/users/photos/photos.typeDefs.ts
+mkdir src/users/photos/uploadPhoto/
+touch src/users/photos/uploadPhoto/uploadPhoto.typeDefs.ts
+touch src/users/photos/uploadPhoto/uploadPhoto.resolvers.ts
+```
+
+### regexp
+
+```js
+// uploadPhoto.resolvers.ts
+const hashtags = caption.match(/#[ㄱ-ㅎ|ㅏ-ㅣ|가-힣|\w]+/g);
+hashtagObjs = hashtags.map(hashtag => ({
+  where: { hashtag },
+  create: { hashtag },
+}));
+```
+
+### use `connectOrCreate` for hashtag
+
+## #6.5 seePhoto
+
+```js
+mkdir src/users/photos/seePhoto/
+touch src/users/photos/seePhoto/seePhoto.typeDefs.ts
+touch src/users/photos/seePhoto/seePhoto.resolvers.ts
+```
+
+### Add computed field to photo => user, hashtags
+
+```js
+touch src/users/photos/photos.resolvers.ts
+```
+
+## #6.6 seeHashtag
+
+```js
+mkdir src/users/photos/seeHashtag/
+touch src/users/photos/seeHashtag/seeHashtag.typeDefs.ts
+touch src/users/photos/seeHashtag/seeHashtag.resolvers.ts
+```
+
+### Add Computed Hashtag field to `photos.resolvers.ts` (cuz tiny enough)
+
+### Field can be resolver as well (with additional argument)
+
+- can extend, reused to other resolver as a core
+
+```js
+type Hashtag {
+...
+    photos(page: Int!): [Photo]
+...
+```
+
+- => no need to define parameter at seeHashtag Query
+- Just use args at computed Hashtag field
+
+```js
+Hashtag: {
+    photos: ({ id }, { page }, { loggedInUser }) =>
+...
+
+```
+
+## #6.7 editPhoto part One
+
+### Fix users first
+
+```js
+// users.typeDefs.ts
+photos: [Photo];
+
+// users.resolvers.ts
+    photos: ({ id }) => client.user.findUnique({ where: { id } }).photos,
+```
+
+### Homwork: add pagination to User's photos
+
+### searchPhotos
+
+```js
+mkdir src/users/photos/searchPhotos/
+touch src/users/photos/searchPhotos/searchPhotos.typeDefs.ts
+touch src/users/photos/searchPhotos/searchPhotos.resolvers.ts
+```
+
+### editPhoto
+
+```js
+mkdir src/users/photos/editPhoto/
+touch src/users/photos/editPhoto/editPhoto.typeDefs.ts
+touch src/users/photos/editPhoto/editPhoto.resolvers.ts
+```
+
+### Convention: Let's make result type `{ok,error}` at least for Mutation
+
+### Use findFirst instead of findUnique if want to use 2 filters
+
+### should edit hashtag as well
+
+-
