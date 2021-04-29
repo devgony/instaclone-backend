@@ -763,18 +763,18 @@ touch src/users/searchUsers/searchUsers.resolvers.ts
 ## #6.2 Upload Photo
 
 ```js
-mkdir src/users/photos
-touch src/users/photos/photos.typeDefs.ts
-mkdir src/users/photos/uploadPhoto/
-touch src/users/photos/uploadPhoto/uploadPhoto.typeDefs.ts
-touch src/users/photos/uploadPhoto/uploadPhoto.resolvers.ts
+mkdir src/photos
+touch src/photos/photos.typeDefs.ts
+mkdir src/photos/uploadPhoto/
+touch src/photos/uploadPhoto/uploadPhoto.typeDefs.ts
+touch src/photos/uploadPhoto/uploadPhoto.resolvers.ts
 ```
 
 ### regexp
 
 ```js
 // uploadPhoto.resolvers.ts
-const hashtags = caption.match(/#[ㄱ-ㅎ|ㅏ-ㅣ|가-힣|\w]+/g);
+const hashtags = caption.match(/#[ㄱ-ㅎ|ㅏ-ㅣ|가-힣|\w]+/g) || [];
 hashtagObjs = hashtags.map(hashtag => ({
   where: { hashtag },
   create: { hashtag },
@@ -786,23 +786,23 @@ hashtagObjs = hashtags.map(hashtag => ({
 ## #6.5 seePhoto
 
 ```js
-mkdir src/users/photos/seePhoto/
-touch src/users/photos/seePhoto/seePhoto.typeDefs.ts
-touch src/users/photos/seePhoto/seePhoto.resolvers.ts
+mkdir src/photos/seePhoto/
+touch src/photos/seePhoto/seePhoto.typeDefs.ts
+touch src/photos/seePhoto/seePhoto.resolvers.ts
 ```
 
 ### Add computed field to photo => user, hashtags
 
 ```js
-touch src/users/photos/photos.resolvers.ts
+touch src/photos/photos.resolvers.ts
 ```
 
 ## #6.6 seeHashtag
 
 ```js
-mkdir src/users/photos/seeHashtag/
-touch src/users/photos/seeHashtag/seeHashtag.typeDefs.ts
-touch src/users/photos/seeHashtag/seeHashtag.resolvers.ts
+mkdir src/photos/seeHashtag/
+touch src/photos/seeHashtag/seeHashtag.typeDefs.ts
+touch src/photos/seeHashtag/seeHashtag.resolvers.ts
 ```
 
 ### Add Computed Hashtag field to `photos.resolvers.ts` (cuz tiny enough)
@@ -845,23 +845,126 @@ photos: [Photo];
 ### searchPhotos
 
 ```js
-mkdir src/users/photos/searchPhotos/
-touch src/users/photos/searchPhotos/searchPhotos.typeDefs.ts
-touch src/users/photos/searchPhotos/searchPhotos.resolvers.ts
+mkdir src/photos/searchPhotos/
+touch src/photos/searchPhotos/searchPhotos.typeDefs.ts
+touch src/photos/searchPhotos/searchPhotos.resolvers.ts
 ```
 
 ### editPhoto
 
 ```js
-mkdir src/users/photos/editPhoto/
-touch src/users/photos/editPhoto/editPhoto.typeDefs.ts
-touch src/users/photos/editPhoto/editPhoto.resolvers.ts
+mkdir src/photos/editPhoto/
+touch src/photos/editPhoto/editPhoto.typeDefs.ts
+touch src/photos/editPhoto/editPhoto.resolvers.ts
 ```
 
 ### Convention: Let's make result type `{ok,error}` at least for Mutation
 
 ### Use findFirst instead of findUnique if want to use 2 filters
 
-### should edit hashtag as well
+### Related hashtag handling
 
--
+```js
+// editPhoto.resolvers.ts
+hashtags: {
+              disconnect: oldPhoto.hashtags,
+              connectOrCreate: processHashtags(caption),
+            },
+```
+
+### Move caption parser to utils and resue
+
+```js
+touch src/photos/photos.utils.ts
+
+export const processHashtags = caption => {
+  const hashtags = caption.match(/#[ㄱ-ㅎ|ㅏ-ㅣ|가-힣|\w]+/g) || [];
+  return hashtags.map(hashtag => ({
+    where: { hashtag },
+    create: { hashtag },
+  }));
+};
+```
+
+## #6.9 Like Unlike Photos
+
+### create model
+
+```js
+model like {
+  id        Int      @id @default(autoincrement())
+  photo     Photo    @relation(fields: [photoId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+  photoId   Int // id for prisma only
+  userId    Int // id for prisma only
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+```
+
+### change like => likes of User, Photo
+
+- the name at prisma doesn't metter
+
+### Compound unique: set composite key
+
+```js
+@@unique([photoId, userId]);
+```
+
+### npm run migrate
+
+```
+✔ Are you sure you want create and apply this migration? Some data will be lost. … yes
+? Name of migration › y
+```
+
+### Add `type Like` to `photos.typeDefs.ts`(for gql): no need to be sync with `schema.prisma`
+
+```js
+mkdir src/photos/toggleLike/
+touch src/photos/toggleLike/toggleLike.typeDefs.ts
+touch src/photos/toggleLike/toggleLike.resolvers.ts
+```
+
+### Just hiding button is not enough! we should use protectedResolver
+
+### Add computed field to Photo
+
+```js
+// photos.typeDefs.ts
+type Photo {
+...
+likes: Int!
+...
+
+// photos.resovlers.ts
+likes: ({ id }) => client.like.count({ where: { photoId: id } }),
+```
+
+## #6.11 seeLikes (of photo)
+
+```js
+mkdir src/photos/seePhotoLikes/
+touch src/photos/seePhotoLikes/seePhotoLikes.typeDefs.ts
+touch src/photos/seePhotoLikes/seePhotoLikes.resolvers.ts
+```
+
+### include vs select
+
+- include: columns of like + additional column of the related entity
+- select: fetch the related entity only
+- we can't use both at once
+- can use nested include {include} or select {select}
+
+## #6.12 seeFeed
+
+### my following's photo + my photo
+
+```js
+mkdir src/photos/seeFeed/
+touch src/photos/seeFeed/seeFeed.typeDefs.ts
+touch src/photos/seeFeed/seeFeed.resolvers.ts
+```
+
+### Homework: Pagination result of seeFeed
