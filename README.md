@@ -968,3 +968,36 @@ touch src/photos/seeFeed/seeFeed.resolvers.ts
 ```
 
 ### Homework: Pagination result of seeFeed
+
+## #6.13 Comment on Photos
+
+- Comment, Photo need isMine computedField
+
+```js
+mkdir src/comments
+touch src/comments/comments.typeDefs.ts
+// touch src/comments/comments.resolvers.ts
+mkdir src/comments/createComment
+touch src/comments/createComment/createComment.typeDefs.ts
+touch src/comments/createComment/createComment.resolvers.ts
+```
+
+## #6.14 See Photo Comments
+
+- add comments: Int! to `Photo` of `photos.typeDefs.ts`
+- implement `comments` resolver `photos.resolvers.ts`
+
+```js
+    comments: ({ id }) => client.comment.count({ where: { photoId: id } }),
+```
+
+- add seePhotoComments in comments directory
+- seePhotoComment can be done by photo > comment, but comment is shown at new page, a resolver should do only one function.
+
+```js
+mkdir src/comments/seePhotoComments
+touch src/comments/seePhotoComments/seePhotoComments.typeDefs.ts
+touch src/comments/seePhotoComments/seePhotoComments.resolvers.ts
+```
+
+- Homework: pagination of comment
