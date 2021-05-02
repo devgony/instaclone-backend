@@ -1045,3 +1045,77 @@ touch src/comments/editComment/editComment.resolvers.ts
 mkdir src/shared
 touch src/shared/shared.typeDefs.ts
 ```
+
+## #6.18 protectedResolver Refactor
+
+- if we are doing query, it is not protected except, seeFeed
+- but seeFeed is not supposed to return ok and error
+- Use 4th params `info` => differentiate query and mutation
+
+```js
+// users.utils.ts
+const query = info.operation.operation === "query";
+if (query) {
+  return null;
+}
+...
+```
+
+## #6.19 S3 Photo Upload
+
+### init IAM
+
+- IAM
+- add user
+- User name: instacloneUploader
+- Access type: Programmatic access
+- Attach exisiting policies directly
+- search S3
+- AmazonS3FullAccess
+- skip Tags
+- Create user
+- copy and paste to .env: AWS_KEY, AWS_SECRET
+- S3 => Create Bucket
+- uncheck: Block all public access
+- check: I acknowledge that the current settings might result in this bucket and the objects within becoming public.
+
+```js
+npm i aws-sdk
+
+// touch src/shared/shared.utils.ts
+```
+
+### Comment-out wrtieStream to local and add uploadToS3 from `shared.utils.ts`
+
+### refactor types
+
+- file: String! => Upload!
+- file => fileUrl
+
+```js
+/// uploadPhoto.typeDefs.ts
+    uploadPhoto(file: Upload!, caption: String): Photo
+
+// uploadPhoto.resolvers.ts
+const fileUrl = await uploadToS3(file, loggedInUser.id);
+...
+          data: {
+            file: fileUrl,
+```
+
+### Add folderName to `uploadToS3`
+
+```js
+// shared.utils.ts
+export const uploadToS3 = async (file, userId, folderName) => {
+...
+const objectName = `${folderName}/${userId}-${Date.now()}-${filename}`;
+
+
+// editProfile.resolverts.ts
+          avatarUrl = await uploadToS3(avatar, loggedInUser.id, "avatars");
+
+// uploadPhoto.resolvers.ts
+        const fileUrl = await uploadToS3(file, loggedInUser.id, "uploads");
+
+```

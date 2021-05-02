@@ -2,7 +2,7 @@ import * as jwt from "jsonwebtoken";
 // import jwt from "jsonwebtoken";
 import client from "../client";
 import { Resolver } from "../types";
-export const getUser = async (token) => {
+export const getUser = async token => {
   try {
     if (!token) {
       return null;
@@ -29,7 +29,13 @@ export const protectedResolver = (ourResolver: Resolver) => (
   info
 ) => {
   if (!context.loggedInUser) {
-    return { ok: false, error: "Please login to perform this action." };
+    const query = info.operation.operation === "query";
+    if (query) {
+      return null;
+    } else {
+      console.log("Please login to perform this action.");
+      return { ok: false, error: "Please login to perform this action." };
+    }
   }
   return ourResolver(root, args, context, info);
 };
