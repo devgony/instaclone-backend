@@ -976,7 +976,6 @@ touch src/photos/seeFeed/seeFeed.resolvers.ts
 ```js
 mkdir src/comments
 touch src/comments/comments.typeDefs.ts
-// touch src/comments/comments.resolvers.ts
 mkdir src/comments/createComment
 touch src/comments/createComment/createComment.typeDefs.ts
 touch src/comments/createComment/createComment.resolvers.ts
@@ -1001,3 +1000,48 @@ touch src/comments/seePhotoComments/seePhotoComments.resolvers.ts
 ```
 
 - Homework: pagination of comment
+
+## #6.15 isMine
+
+- Prisma gives us useful the userId!
+- Add isMine to both of photo and comment
+
+```js
+// touch src/comments/comments.resolvers.ts && src/photos/photos.resolvers.ts
+
+isMine: ({ userId }, _, { loggedInUser }) => {
+  if (!loggedInUser) {
+    return false;
+  }
+  return userId === loggedInUser.id;
+};
+```
+
+## #6.16 Delete Comment and Photos
+
+```js
+mkdir src/photos/deletePhoto
+touch src/photos/deletePhoto/deletePhoto.typeDefs.ts
+touch src/photos/deletePhoto/deletePhoto.resolvers.ts
+
+mkdir src/comments/deleteComment
+touch src/comments/deleteComment/deleteComment.typeDefs.ts
+touch src/comments/deleteComment/deleteComment.resolvers.ts
+```
+
+## #6.17 editComment
+
+```js
+mkdir src/comments/editComment
+touch src/comments/editComment/editComment.typeDefs.ts
+touch src/comments/editComment/editComment.resolvers.ts
+```
+
+### shared MutationResponse
+
+- substitute \*Result! => MutationResponse! expect `login, seeFollowers, seefFollowing`
+
+```js
+mkdir src/shared
+touch src/shared/shared.typeDefs.ts
+```

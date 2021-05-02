@@ -19,12 +19,18 @@ export default {
       }),
     likes: ({ id }) => client.like.count({ where: { photoId: id } }),
     comments: ({ id }) => client.comment.count({ where: { photoId: id } }),
+    isMine: ({ userId }, _, { loggedInUser }) => {
+      if (!loggedInUser) {
+        return false;
+      }
+      return userId === loggedInUser.id;
+    },
   },
   Hashtag: {
     photos: ({ id }, { page }, { loggedInUser }) =>
       // field can be resolver as well
       // with page, do pagination
-      // with loggedIntUser, can protect partial field
+      // with loggedInUser, can protect partial field
       client.photo.findMany({
         where: { id },
       }),
