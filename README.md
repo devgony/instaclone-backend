@@ -1119,3 +1119,63 @@ const objectName = `${folderName}/${userId}-${Date.now()}-${filename}`;
         const fileUrl = await uploadToS3(file, loggedInUser.id, "uploads");
 
 ```
+
+# #7 DIRECT MESSAGES
+
+## #7.0 Introduction
+
+### what to make?
+
+- Create Room
+- Get Room
+- Send Message
+- Realtime Messages: with gql but not subscription?
+
+### In case of intensive performance?: erlang, elixir
+
+## #7.1 Models (04:41)
+
+- room can be for n people
+- User:Room = N:M => modify auto completed columns
+
+```js
+model User {
+  // Room      Room?     @relation(fields: [roomId], references: [id])
+  // roomId    Int?
+  rooms     Room[]
+}
+
+model Room {
+  id        Int       @id @default(autoincrement())
+  users     User[]
+  messages  Message[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Message {
+  id        Int      @id @default(autoincrement())
+  payload   String
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int
+  room      Room     @relation(fields: [roomId], references: [id])
+  roomId    Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+```
+
+## #7.2 seeRooms
+
+```js
+mkdir src/messages
+touch src/messages/messages.typeDefs.ts
+
+mkdir src/messages/seeRooms
+touch src/messages/seeRooms/seeRooms.typeDefs.ts
+touch src/messages/seeRooms/seeRooms.resolvers.ts
+```
+
+## #7.3 sendMessage
+
+### createRoom? => when sendMessage, room is created automtically
