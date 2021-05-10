@@ -1179,3 +1179,241 @@ touch src/messages/seeRooms/seeRooms.resolvers.ts
 ## #7.3 sendMessage
 
 ### createRoom? => when sendMessage, room is created automtically
+
+```js
+mkdir src/messages/sendMessage
+touch src/messages/sendMessage/sendMessage.typeDefs.ts
+touch src/messages/sendMessage/sendMessage.resolvers.ts
+```
+
+- case1. userId? > create room with target userId and my loggedInUser.id
+- case2. roomId? > create message with previous room with my loggedInUser.id
+
+## #7.4 seeRoom
+
+### room id + my id
+
+```js
+mkdir src/messages/seeRoom
+touch src/messages/seeRoom/seeRoom.typeDefs.ts
+touch src/messages/seeRoom/seeRoom.resolvers.ts
+```
+
+### not include but computed field!
+
+`touch src/messages/messages.resolvers.ts`
+
+- users
+- messages
+- unreadTotal: haven't read, roomId, not by me
+- add read column to Room
+
+```js
+// schema.prisma
+model Message {
+...
+  read      Boolean  @default(false)
+...
+}
+// message.typeDefs.ts
+type Message {
+...
+  read: Boolean!
+...
+}
+
+// npm run migrate
+```
+
+## #7.5 readMessage
+
+### mark message as read
+
+- messageId, not by me, by users in this room
+
+```js
+mkdir src/messages/readMessage
+touch src/messages/readMessage/readMessage.typeDefs.ts
+touch src/messages/readMessage/readMessage.resolvers.ts
+```
+
+## #7.6 Super Test
+
+- add computed field `user` and isMine to `messages.resolvers.ts`
+
+```js
+Message: {
+    user: ({ id }) => client.message.findUnique({ where: { id } }).user(),
+  },
+
+```
+
+## After testing...
+
+- seeRoom(s), sendMessage, readMessage works!
+
+## #7.7 Subscriptions Setup part
+
+### what for: low latency, real time!
+
+### gql pubsub => dev VS gql redis => prod
+
+```js
+// touch pubsub.ts
+import { PubSub } from "apollo-server-express";
+const pubsub = new PubSub();
+export default pubsub;
+
+mkdir src/messages/roomUpdates
+touch src/messages/roomUpdates/roomUpdates.typeDefs.ts
+touch src/messages/roomUpdates/roomUpdates.resolvers.ts
+touch src/constants.ts
+
+// server.ts
+const httpServer = http.createServer(app);
+apollo.installSubscriptionHandlers(httpServer);
+```
+
+### ws does ont have req => cover with if
+
+```js
+// server.ts
+context: async ({ req }) => {
+    if (req) {
+      return {
+        loggedInUser: await getUser(req.headers.token),
+        client,
+      };
+    }
+  },
+```
+
+### let's publish!
+
+```js
+// get message with const
+const message = await client.message.create({
+...
+// syntax: subscriptionName: Obj
+pubsub.publish(NEW_MESSAGE, { roomUpdates: { ...message } });
+```
+
+## #7.9 Filtering Subscriptions part
+
+### current subscription is not safe
+
+1. can see only the room i'm listening(id) => add id parameter
+
+```js
+subscribe: withFilter(
+        () => pubsub.asyncIterator(NEW_MESSAGE),
+        ({ roomUpdates }, { id }) => {
+          // if this returns true, update
+          return roomUpdates.roomId === id;
+        }
+      ),
+```
+
+2. check if the room exists? then start listening (optional)
+
+- separate case
+  1. when room does not exist, throw error (subscription can't return null)
+  2. when there is room, return withfilter()(root, args, context, info)
+
+```js
+subscribe: async (root, args, context, info) => {
+        const room = await client.room.findUnique({
+          where: { id: args.id },
+          select: { id: true },
+        });
+        if (!room) {
+          throw new Error("You shall not see this.");
+        }
+        return withFilter(
+          () => pubsub.asyncIterator(NEW_MESSAGE),
+          ({ roomUpdates }, { id }) => {
+            // if this returns true, update
+            return roomUpdates.roomId === id;
+          }
+        )(root, args, context, info);
+      },
+```
+
+3. if user is part of the room then can listen => withFilter? can listen only my roomId?
+
+- get token from header? => onConnect will give http header
+
+```js
+// server.ts
+subscriptions: {
+    onConnect: async ({ token }: { token: string }) => {
+      if (!token) {
+        throw new Error("You can't listen.");
+      }
+      const loggedInUser = await getUser(token);
+      return { loggedInUser }; // goes to context
+    },
+  },
+```
+
+- loggedInUser from onConnect to context
+  1. if req? getUser from header
+  2. else send loggedInUser to resolver
+
+```js
+context: async ctx => {
+    if (ctx.req) {
+      return {
+        loggedInUser: await getUser(ctx.req.headers.token),
+        client,
+      };
+    } else {
+      const {
+        connection: { context },
+      } = ctx;
+      return {
+        loggedInUser: context.loggedInUser,
+      };
+    }
+  },
+```
+
+- (before starting to listen) add userId to condition => participated user in room can only listen
+
+```js
+const room = await client.room.findFirst({
+  where: {
+    id: args.id,
+    users: {
+      some: { id: context.loggedInUser.id },
+    },
+  },
+  select: { id: true },
+});
+```
+
+- after starting to listen, double check ( just in case after starting to listen, got banned )
+
+```js
+return withFilter(
+  () => pubsub.asyncIterator(NEW_MESSAGE),
+  async ({ roomUpdates }, { id }, { loggedInUser }) => {
+    // if this returns true, update
+    if (roomUpdates.roomId === id) {
+      const room = await client.room.findFirst({
+        where: {
+          id,
+          users: {
+            some: { id: context.loggedInUser.id },
+          },
+        },
+        select: { id: true },
+      });
+      if (!room) {
+        return false;
+      }
+      return true;
+    }
+  }
+)(root, args, context, info);
+```
