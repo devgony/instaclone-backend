@@ -17,11 +17,13 @@ const apollo = new ApolloServer({
   // schema,
   context: async ctx => {
     if (ctx.req) {
+      // when resolver is using http
       return {
         loggedInUser: await getUser(ctx.req.headers.token),
         client,
       };
     } else {
+      // when resolver is using ws
       const {
         connection: { context },
       } = ctx;

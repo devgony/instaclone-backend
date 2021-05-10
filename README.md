@@ -1417,3 +1417,5 @@ return withFilter(
   }
 )(root, args, context, info);
 ```
+
+## #7.12 Recap
