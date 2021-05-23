@@ -1419,3 +1419,13 @@ return withFilter(
 ```
 
 ## #7.12 Recap
+
+# Revise from frontend
+
+## Add me
+
+```js
+mkdir src/users/me
+touch src/users/me/me.typeDefs.ts
+touch src/users/me/me.resolvers.ts
+```
