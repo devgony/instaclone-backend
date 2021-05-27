@@ -7,11 +7,13 @@ export default gql`
     file: String!
     caption: String
     likes: Int!
-    comments: Int!
+    commentNumber: Int!
+    comments: [Comment]
     hashtags: [Hashtag]
     isMine: Boolean! # computed field
-    createadAt: String!
+    createdAt: String!
     updatedAt: String!
+    isLiked: Boolean!
   }
   type Hashtag {
     # dependent on photo?
@@ -26,7 +28,7 @@ export default gql`
   type Like {
     id: Int!
     photo: Photo!
-    createadAt: String!
+    createdAt: String!
     updatedAt: String!
   }
 `;

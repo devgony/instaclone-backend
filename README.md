@@ -92,7 +92,7 @@ server
 - generate client to interpret
 
 ```
-npm i @prisma/cli -D
+npm i prisma -D
 npx prisma init
 extension> prisma
 ```
@@ -568,6 +568,7 @@ npm i
 - just testing writing file to local
 
 ```js
+import { createWriteStream } from "fs";
 const { filename, createReadStream } = await avatar;
 const readStream = createReadStream();
 const writeStream = createWriteStream(process.cwd() + "/uploads/" + filename);
@@ -1429,3 +1430,13 @@ mkdir src/users/me
 touch src/users/me/me.typeDefs.ts
 touch src/users/me/me.resolvers.ts
 ```
+
+## Add isLiked to `Photo`
+
+## modify comments => commentNumber
+
+## add comments: comment[]
+
+## add id to MutationResponse at `shared.typeDefs.ts`
+
+## at least return newComment.id at `createComment.resolvers.ts`
