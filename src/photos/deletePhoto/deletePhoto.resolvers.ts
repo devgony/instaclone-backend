@@ -13,9 +13,11 @@ export default {
       } else if (photo.userId !== loggedInUser.id) {
         return { ok: false, error: "Not authorized." };
       } else {
-        await client.photo.delete({
-          where: { id },
-        });
+        // await client.photo.delete({
+        //   where: { id },
+        // });
+        // To delete 1:N relationshiped-parent, use $queryRaw
+        await client.$queryRaw('DELETE FROM "Photo" where id = $1;', id);
         return { ok: true };
       }
     }),

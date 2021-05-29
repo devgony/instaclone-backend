@@ -838,7 +838,7 @@ Hashtag: {
 photos: [Photo];
 
 // users.resolvers.ts
-    photos: ({ id }) => client.user.findUnique({ where: { id } }).photos,
+    photos: ({ id }) => client.user.findUnique({ where: { id } }).photos(),
 ```
 
 ### Homwork: add pagination to User's photos
@@ -1440,3 +1440,5 @@ touch src/users/me/me.resolvers.ts
 ## add id to MutationResponse at `shared.typeDefs.ts`
 
 ## at least return newComment.id at `createComment.resolvers.ts`
+
+## To delete 1:N relationshiped-parent, use $queryRaw
