@@ -8,8 +8,6 @@ import client from "./client";
 import pubsub from "./pubsub";
 import * as http from "http";
 
-console.log(pubsub);
-
 const PORT = process.env.PORT;
 const apollo = new ApolloServer({
   resolvers,
