@@ -1442,3 +1442,38 @@ touch src/users/me/me.resolvers.ts
 ## at least return newComment.id at `createComment.resolvers.ts`
 
 ## To delete 1:N relationshiped-parent, use $queryRaw
+
+---
+
+# Deploy
+
+# #19.0 Building the Server (09:34)
+
+- Don't need to use nodemon
+- Don't use babel-node in production
+
+## Use babel-cli: take whole folder and build => output whole folder
+
+```js
+npm i @babel/cli --dev-only
+```
+
+## put every files in src add script
+
+```js
+// ts => no need to change
+"dev": "nodemon --exec ts-node src/server --ext ts,js --delay 1s",
+// new
+"build": "babel src --out-dir build",
+"start": "node build/server"
+```
+
+## regenerator-runtime error: allows async functions
+
+```js
+npm install --save-dev @babel/plugin-transform-runtime
+add ~
+npm run build
+```
+
+## add build to .gitignore
