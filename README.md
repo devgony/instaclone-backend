@@ -1514,6 +1514,25 @@ heroku logs --tail
 const apollo = new ApolloServer({
   ...
   playground: true, // is false on production
+  introspection: true, // get docs
 ```
 
 ## at heorku, `process.env.NODE_ENV === "production"`
+
+# #19.3 Configuring Databases (12:05)
+
+## Create Heroku postgres
+
+## set env
+
+```
+heroku config:set ENV1= ENV2=
+```
+
+## Migrate at `heroku release phase`
+
+```
+// touch Procfile
+release: prisma migrate deploy
+web: npm start
+```

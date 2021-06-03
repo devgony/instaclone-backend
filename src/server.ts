@@ -13,6 +13,7 @@ const apollo = new ApolloServer({
   resolvers,
   typeDefs,
   playground: true,
+  introspection: true,
   // schema,
   context: async ctx => {
     if (ctx.req) {
