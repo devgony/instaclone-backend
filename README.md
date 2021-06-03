@@ -1533,6 +1533,6 @@ heroku config:set ENV1= ENV2=
 
 ```
 // touch Procfile
-release: prisma migrate deploy
+release: npx prisma migrate deploy
 web: npm start
 ```
