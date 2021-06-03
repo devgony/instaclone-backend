@@ -1449,31 +1449,43 @@ touch src/users/me/me.resolvers.ts
 
 # #19.0 Building the Server (09:34)
 
-- Don't need to use nodemon
+- Don't need to use nodemon on production
 - Don't use babel-node in production
 
-## Use babel-cli: take whole folder and build => output whole folder
+## Use `tsc` for ts, `babel-cli` for js
 
-```js
-npm i @babel/cli --dev-only
+```ts
+// package.json
+"scripts": {
+    ...
+    "build": "tsc",
+    "start": "node build/server"
+  },
 ```
 
-## put every files in src add script
+## `tsconfig.json` to escape error
 
 ```js
-// ts => no need to change
-"dev": "nodemon --exec ts-node src/server --ext ts,js --delay 1s",
-// new
-"build": "babel src --out-dir build",
-"start": "node build/server"
+{
+  "compilerOptions": {
+    "outDir": "./build",
+    "allowJs": true,
+    "target": "ES5",
+    "skipLibCheck": true
+  },
+  "include": ["./src/**/*"]
+}
 ```
 
-## regenerator-runtime error: allows async functions
+## schema config to escape root Query error
 
 ```js
-npm install --save-dev @babel/plugin-transform-runtime
-add ~
-npm run build
+const loadedTypes = loadFilesSync(`${__dirname}/**/*.typeDefs.{j,t}s`);
+const loadedResolvers = loadFilesSync(`${__dirname}/**/*.resolvers.{j,t}s`);
 ```
 
-## add build to .gitignore
+## regenerator-runtime error: allows async functions => for js only
+
+## add `build/` to .gitignore
+
+# #19.1 Deploy to Heroku part One (07:04)
