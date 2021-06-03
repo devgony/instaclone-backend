@@ -1489,3 +1489,31 @@ const loadedResolvers = loadFilesSync(`${__dirname}/**/*.resolvers.{j,t}s`);
 ## add `build/` to .gitignore
 
 # #19.1 Deploy to Heroku part One (07:04)
+
+## Heroku create new app: `instaclone-backend-henry`
+
+1. heroku cli
+2. git
+
+```
+heroku login
+heroku git:remote -a instaclone-backend-henry
+git add .
+git commit -m "init deploy"
+git push heroku master
+heroku logs --tail
+```
+
+# #19.2 Deploy to Heroku part Two (06:54)
+
+## Cannot find module? just put that module on dependenceis at `package.json` + `npm i` again
+
+## GET query missing
+
+```js
+const apollo = new ApolloServer({
+  ...
+  playground: true, // is false on production
+```
+
+## at heorku, `process.env.NODE_ENV === "production"`
