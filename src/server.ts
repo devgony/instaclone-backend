@@ -54,3 +54,14 @@ apollo.installSubscriptionHandlers(httpServer);
 httpServer.listen(PORT, () =>
   console.log(`🚀 Server is running on http://localhost:${PORT}`)
 );
+
+if (process.env.NODE_ENV) {
+  const localtunnel = require("localtunnel");
+  (async () => {
+    const tunnel = await localtunnel({ port: PORT, subdomain: "ninstaclone" });
+    console.log(`${process.env.NODE_ENV}:localtunnel.url: ${tunnel.url}`);
+    tunnel.on("close", () => {
+      console.log("localtunnel closed");
+    });
+  })();
+}

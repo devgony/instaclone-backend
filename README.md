@@ -1536,3 +1536,23 @@ heroku config:set ENV1= ENV2=
 release: npx prisma migrate deploy
 web: npm start
 ```
+
+# localtunnel for React-Native
+
+```js
+npm i localtunnel cross-env
+// package.json
+"dev": "cross-env NODE_ENV=dev nodemon --exec ts-node src/server --ext ts,js --delay 1s",
+
+// server.ts
+if (process.env.NODE_ENV) {
+  const localtunnel = require("localtunnel");
+  (async () => {
+    const tunnel = await localtunnel({ port: PORT, subdomain: "ninstaclone" });
+    console.log(`${process.env.NODE_ENV}:localtunnel.url: ${tunnel.url}`);
+    tunnel.on("close", () => {
+      console.log("localtunnel closed");
+    });
+  })();
+}
+```
