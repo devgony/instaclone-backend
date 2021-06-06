@@ -55,10 +55,14 @@ httpServer.listen(PORT, () =>
   console.log(`🚀 Server is running on http://localhost:${PORT}`)
 );
 
+console.log(process.env.SUBDOMAIN);
 if (process.env.NODE_ENV) {
   const localtunnel = require("localtunnel");
   (async () => {
-    const tunnel = await localtunnel({ port: PORT, subdomain: "ninstaclone" });
+    const tunnel = await localtunnel({
+      port: PORT,
+      subdomain: process.env.SUBDOMAIN,
+    });
     console.log(`${process.env.NODE_ENV}:localtunnel.url: ${tunnel.url}`);
     tunnel.on("close", () => {
       console.log("localtunnel closed");
