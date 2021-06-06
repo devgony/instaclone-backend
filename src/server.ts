@@ -55,7 +55,6 @@ httpServer.listen(PORT, () =>
   console.log(`🚀 Server is running on http://localhost:${PORT}`)
 );
 
-console.log(process.env.SUBDOMAIN);
 if (process.env.NODE_ENV) {
   const localtunnel = require("localtunnel");
   (async () => {
@@ -63,7 +62,9 @@ if (process.env.NODE_ENV) {
       port: PORT,
       subdomain: process.env.SUBDOMAIN,
     });
-    console.log(`${process.env.NODE_ENV}:localtunnel.url: ${tunnel.url}`);
+    console.log(
+      `${process.env.NODE_ENV}:localtunnel.url: ${tunnel.url}/graphql`
+    );
     tunnel.on("close", () => {
       console.log("localtunnel closed");
     });
