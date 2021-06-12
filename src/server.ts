@@ -7,6 +7,7 @@ import { getUser } from "./users/users.utils";
 import client from "./client";
 import pubsub from "./pubsub";
 import * as http from "http";
+import { graphqlUploadExpress } from "graphql-upload";
 
 const PORT = process.env.PORT;
 const apollo = new ApolloServer({
@@ -45,6 +46,7 @@ const apollo = new ApolloServer({
 
 // order of middle ware is important (logger should be earlier than apollo)
 const app = express();
+// app.use(graphqlUploadExpress({ maxFileSize: 1000000000, maxFiles: 10 }));
 // app.use(logger("tiny"));
 apollo.applyMiddleware({ app });
 app.use("/static", express.static("uploads"));
