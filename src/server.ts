@@ -8,6 +8,7 @@ import client from "./client";
 import pubsub from "./pubsub";
 import * as http from "http";
 import { graphqlUploadExpress } from "graphql-upload";
+const cors = require("cors");
 
 const PORT = process.env.PORT;
 const apollo = new ApolloServer({
@@ -46,6 +47,7 @@ const apollo = new ApolloServer({
 
 // order of middle ware is important (logger should be earlier than apollo)
 const app = express();
+app.use(cors());
 // app.use(graphqlUploadExpress({ maxFileSize: 1000000000, maxFiles: 10 }));
 // app.use(logger("tiny"));
 apollo.applyMiddleware({ app });
@@ -57,7 +59,7 @@ httpServer.listen(PORT, () =>
   console.log(`🚀 Server is running on http://localhost:${PORT}`)
 );
 
-if (process.env.NODE_ENV) {
+if (process.env.NODE_ENV === "dev") {
   const localtunnel = require("localtunnel");
   (async () => {
     const tunnel = await localtunnel({
