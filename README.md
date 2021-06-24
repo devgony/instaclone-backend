@@ -1560,3 +1560,9 @@ if (process.env.NODE_ENV) {
 # Edited
 
 ## #18.6 Room Screen part Four (14:30) => sendMessage.resolver.ts return id
+
+```
+npm ui @prisma/cli
+npm i @prisma/client
+npm install prisma --save-dev
+```
