@@ -1566,3 +1566,18 @@ npm ui @prisma/cli
 npm i @prisma/client
 npm install prisma --save-dev
 ```
+
+## #18.8 Room Screen part Six (09:29)
+
+### add orderby desc at computed messages
+
+```js
+// src/messages/messages.resolvers.ts
+messages: ({ id }) =>
+      client.message.findMany({
+        where: {
+          roomId: id,
+        },
+        orderBy: { updatedAt: "desc" },
+      }),
+```
